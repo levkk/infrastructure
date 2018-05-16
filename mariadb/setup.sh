@@ -78,22 +78,22 @@ if zfs list  | grep $ZPOOL_NAME ; then
 else
     echo "Setting up ZFS pool."
     python -c "
-    import subprocess, sys, json;
-    while True:
-        devices = []
-        for x in json.loads(subprocess.check_output(['lsblk', '--json', '--list']))['blockdevices']:
-            device_name = '/dev/{}'.format(x['name'])
-            if not x['mountpoint'] and not x.get('children'):
-                dev = raw_input('use {} {} for ZFS pool (y/n)?: '.format(device_name, x['size'])).lower().strip()
-                if dev == 'y':
-                    devices.append(device_name)
-        confirm = raw_input('Confirm using these devices {} for the $ZPOOL_NAME ZFS pool (y/n): '.format(','.join(devices)))
-        if confirm == 'y':
-            print 'Creating zpool $ZPOOL_NAME with {}.'.format(','.join(devices)).lower().strip()
-            cmd  = ['zpool', 'create', '-f', '$ZPOOL_NAME'] + devices
-            print ' '.join(cmd), '\n'
-            subprocess.check_call(cmd)
-            sys.exit(0)
+import subprocess, sys, json;
+while True:
+    devices = []
+    for x in json.loads(subprocess.check_output(['lsblk', '--json', '--list']))['blockdevices']:
+        device_name = '/dev/{}'.format(x['name'])
+        if not x['mountpoint'] and not x.get('children'):
+            dev = raw_input('use {} {} for ZFS pool (y/n)?: '.format(device_name, x['size'])).lower().strip()
+            if dev == 'y':
+                devices.append(device_name)
+    confirm = raw_input('Confirm using these devices {} for the $ZPOOL_NAME ZFS pool (y/n): '.format(','.join(devices)))
+    if confirm == 'y':
+        print 'Creating zpool $ZPOOL_NAME with {}.'.format(','.join(devices)).lower().strip()
+        cmd  = ['zpool', 'create', '-f', '$ZPOOL_NAME'] + devices
+        print ' '.join(cmd), '\n'
+        subprocess.check_call(cmd)
+        sys.exit(0)
     "
 
     echo "Setting zpool compression to $ZPOOL_COMPRESSION"
