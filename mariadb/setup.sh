@@ -114,12 +114,6 @@ while True:
     zfs set primarycache=metadata $MYSQL_LOG_ZFS_DATASET
     zfs set mountpoint=/var/log/mysql $MYSQL_LOG_ZFS_DATASET
 
-    echo "Creating $ZFS_TMP_DATASET"
-    zfs create $ZFS_TMP_DATASET
-    zfs set recordsize=128k $ZFS_TMP_DATASET
-    zfs set atime=off $ZFS_TMP_DATASET
-    zfs set primarycache=metadata $ZFS_TMP_DATASET
-    zfs set mountpoint=/var/lib/mysql/tmp $ZFS_TMP_DATASET
 
     echo "Creating $MYSQL_DATABASE_ZFS_DATASET"
     zfs create $MYSQL_DATABASE_ZFS_DATASET
@@ -129,6 +123,13 @@ while True:
 
     zfs set mountpoint=/var/lib/mysql $MYSQL_DATABASE_ZFS_DATASET
     chown mysql:mysql -R /var/lib/mysql
+
+    echo "Creating $ZFS_TMP_DATASET"
+    zfs create $ZFS_TMP_DATASET
+    zfs set recordsize=128k $ZFS_TMP_DATASET
+    zfs set atime=off $ZFS_TMP_DATASET
+    zfs set primarycache=metadata $ZFS_TMP_DATASET
+    zfs set mountpoint=/var/lib/mysql_tmp $ZFS_TMP_DATASET
 fi
 
 
