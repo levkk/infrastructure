@@ -67,11 +67,11 @@ MYSQL_LOG_ZFS_DATASET=$ZPOOL_NAME/mysql_logs
 ZFS_TMP_DATASET=$ZPOOL_NAME/tmp
 NOTIFICATION_EMAIL_PATH=~/.notification_email
 
-read_var_from_path ~/.notification_email "Enter notification email address: " NOTIFICATION_EMAIL
+read_var_from_path ~/.notification_email NOTIFICATION_EMAIL "Enter notification email address: "
 
-read_var_from_path ~/.Z3_BACKUP_BUCKET "Enter s3 bucket to use for zfs backups: " Z3_BACKUP_BUCKET
+read_var_from_path ~/.Z3_BACKUP_BUCKET Z3_BACKUP_BUCKET "Enter s3 bucket to use for zfs backups: "
 
-read_var_from_path ~/.Z3_S3_PREFIX "Enter the s3 prefix to use for zfs backups (probably this machine's name): " Z3_S3_PREFIX
+read_var_from_path ~/.Z3_S3_PREFIX Z3_S3_PREFIX "Enter the s3 prefix to use for zfs backups (probably this machine's name): "
 
 
 if zfs list  | grep $ZPOOL_NAME ; then
