@@ -34,6 +34,7 @@ apt-get install -y \
 	sysstat \
 	awscli \
 	nethogs \
+    moreutils \
 	zfs-initramfs \
 	zfs-dkms \
 	zfsutils-linux \
