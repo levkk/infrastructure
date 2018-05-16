@@ -10,9 +10,14 @@ apt-get install -y \
 	zfs-dkms \
 	zfsutils-linux \
 	bmon \
-    python-pip
+    python-pip \
+    pv \
+    pigz
+
 
 pip install pidlock
+pip install z3
+
 
 ZPOOL_NAME=tide
 ZPOOL_COMPRESSION=lz4
