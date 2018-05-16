@@ -130,6 +130,7 @@ fi
 
 apt-get install mariadb-server-10.2
 
+ARC_CACHE_LIMIT=`cat /proc/meminfo | grep 'MemTotal' | awk '{print $2}' | python -c "import sys; print int(1000 * float(sys.stdin.read()) * float($ARC_CACHE_RATIO))"`
 
 cat > /etc/rc.local << EOF
 #!/bin/sh -e
@@ -142,7 +143,6 @@ echo never > /sys/kernel/mm/transparent_hugepage/enabled
 echo never > /sys/kernel/mm/transparent_hugepage/defrag
 echo 5 > /sys/module/zfs/parameters/zfs_vdev_async_write_active_min_dirty_percent
 echo $ARC_CACHE_LIMIT > /sys/module/zfs/parameters/zfs_arc_max
-ARC_CACHE_LIMIT=`cat /proc/meminfo | grep 'MemTotal' | awk '{print $2}' | python -c "import sys; print int(1000 * float(sys.stdin.read()) * float($ARC_CACHE_RATIO))"`
 
 exit 0
 EOF
