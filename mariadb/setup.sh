@@ -151,7 +151,7 @@ bash /etc/rc.local
 
 
 Z3_CONCURRENCY="$(($NUMBER_OF_CPUS * 4))"
-
+mkdir -p /etc/z3_backup/
 cat > /etc/z3_backup/z3.conf << EOF
 [main]
 # # you can override any of these with an environment variable
