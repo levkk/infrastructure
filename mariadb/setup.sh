@@ -2,6 +2,7 @@
 set -e
 
 read_var () {
+    # read_var (MSG, VAR_NAME)
     while true
     do
         echo -n $1
@@ -16,6 +17,17 @@ read_var () {
     done
 }
 
+read_var_from_path () {
+    # read_var_from_path(PATH, VAR_NAME, MSG)
+    if stat $1 > /dev/null; then
+        printf -v $2 `cat $1`
+        echo "Read $2=`echo $2` from $1"
+    else
+        echo $3
+        read_var "$3" "$2"
+        echo -n $2 > $1
+    fi
+}
 
 apt-get update -qq && apt-get upgrade 
 
@@ -53,59 +65,64 @@ ARC_CACHE_RATIO=0.10
 MYSQL_DATABASE_ZFS_DATASET=$ZPOOL_NAME/mysql
 MYSQL_LOG_ZFS_DATASET=$ZPOOL_NAME/mysql_logs
 ZFS_TMP_DATASET=$ZPOOL_NAME/tmp
+NOTIFICATION_EMAIL_PATH=~/.notification_email
 
-read_var "Enter notification email address: " NOTIFICATION_EMAIL
+read_var_from_path ~/.notification_email "Enter notification email address: " NOTIFICATION_EMAIL
+
+read_var_from_path ~/.Z3_BACKUP_BUCKET "Enter s3 bucket to use for zfs backups: " Z3_BACKUP_BUCKET
+
+read_var_from_path ~/.Z3_S3_PREFIX "Enter the s3 prefix to use for zfs backups (probably this machine's name): " Z3_S3_PREFIX
 
 
-read_var "Enter s3 bucket to use for zfs backups: " Z3_BACKUP_BUCKET
-read_var "Enter the s3 prefix to use for zfs backups (probably this machine's name): " Z3_S3_PREFIX
+if zfs list  | grep $ZPOOL_NAME ; then
+    echo "Skipping ZFS pool setup (it's $ZPOOL_NAME exists)."
+else
+    echo "Setting up ZFS pool."
+    python -c "
+    import subprocess, sys, json;
+    while True:
+        devices = []
+        for x in json.loads(subprocess.check_output(['lsblk', '--json', '--list']))['blockdevices']:
+            device_name = '/dev/{}'.format(x['name'])
+            if not x['mountpoint'] and not x.get('children'):
+                dev = raw_input('use {} {} for ZFS pool (y/n)?: '.format(device_name, x['size'])).lower().strip()
+                if dev == 'y':
+                    devices.append(device_name)
+        confirm = raw_input('Confirm using these devices {} for the $ZPOOL_NAME ZFS pool (y/n): '.format(','.join(devices)))
+        if confirm == 'y':
+            print 'Creating zpool $ZPOOL_NAME with {}.'.format(','.join(devices)).lower().strip()
+            cmd  = ['zpool', 'create', '-f', '$ZPOOL_NAME'] + devices
+            print ' '.join(cmd), '\n'
+            subprocess.check_call(cmd)
+            sys.exit(0)
+    "
 
-echo "Setting up ZFS pool."
-python -c "
-import subprocess, sys, json;
-while True:
-    devices = []
-    for x in json.loads(subprocess.check_output(['lsblk', '--json', '--list']))['blockdevices']:
-        device_name = '/dev/{}'.format(x['name'])
-        if not x['mountpoint'] and not x.get('children'):
-            dev = raw_input('use {} {} for ZFS pool (y/n)?: '.format(device_name, x['size'])).lower().strip()
-            if dev == 'y':
-                devices.append(device_name)
-    confirm = raw_input('Confirm using these devices {} for the $ZPOOL_NAME ZFS pool (y/n): '.format(','.join(devices)))
-    if confirm == 'y':
-        print 'Creating zpool $ZPOOL_NAME with {}.'.format(','.join(devices)).lower().strip()
-        cmd  = ['zpool', 'create', '-f', '$ZPOOL_NAME'] + devices
-        print ' '.join(cmd), '\n'
-        subprocess.check_call(cmd)
-        sys.exit(0)
-"
+    echo "Setting zpool compression to $ZPOOL_COMPRESSION"
+    zfs set compression=lz4 $ZPOOL_NAME
 
-echo "Setting zpool compression to $ZPOOL_COMPRESSION"
-zfs set compression=lz4 $ZPOOL_NAME
+    echo "Creating $MYSQL_LOG_ZFS_DATASET"
+    zfs create $MYSQL_LOG_ZFS_DATASET
+    zfs set recordsize=128k $MYSQL_LOG_ZFS_DATASET
+    zfs set atime=off $MYSQL_LOG_ZFS_DATASET
+    zfs set primarycache=metadata $MYSQL_LOG_ZFS_DATASET
+    zfs set mountpoint=/var/log/mysql $MYSQL_LOG_ZFS_DATASET
 
-echo "Creating $MYSQL_LOG_ZFS_DATASET"
-zfs create $MYSQL_LOG_ZFS_DATASET
-zfs set recordsize=128k $MYSQL_LOG_ZFS_DATASET
-zfs set atime=off $MYSQL_LOG_ZFS_DATASET
-zfs set primarycache=metadata $MYSQL_LOG_ZFS_DATASET
-zfs set mountpoint=/var/log/mysql $MYSQL_LOG_ZFS_DATASET
+    echo "Creating $ZFS_TMP_DATASET"
+    zfs create $ZFS_TMP_DATASET
+    zfs set recordsize=128k $ZFS_TMP_DATASET
+    zfs set atime=off $ZFS_TMP_DATASET
+    zfs set primarycache=metadata $ZFS_TMP_DATASET
+    zfs set mountpoint=/var/lib/mysql/tmp $ZFS_TMP_DATASET
 
-echo "Creating $ZFS_TMP_DATASET"
-zfs create $ZFS_TMP_DATASET
-zfs set recordsize=128k $ZFS_TMP_DATASET
-zfs set atime=off $ZFS_TMP_DATASET
-zfs set primarycache=metadata $ZFS_TMP_DATASET
-zfs set mountpoint=/var/lib/mysql/tmp $ZFS_TMP_DATASET
+    echo "Creating $MYSQL_DATABASE_ZFS_DATASET"
+    zfs create $MYSQL_DATABASE_ZFS_DATASET
+    zfs set recordsize=16k $MYSQL_DATABASE_ZFS_DATASET
+    zfs set atime=off $MYSQL_DATABASE_ZFS_DATASET
+    zfs set primarycache=metadata $MYSQL_DATABASE_ZFS_DATASET
 
-echo "Creating $MYSQL_DATABASE_ZFS_DATASET"
-zfs create $MYSQL_DATABASE_ZFS_DATASET
-zfs set recordsize=16k $MYSQL_DATABASE_ZFS_DATASET
-zfs set atime=off $MYSQL_DATABASE_ZFS_DATASET
-zfs set primarycache=metadata $MYSQL_DATABASE_ZFS_DATASET
-
-zfs set mountpoint=/var/lib/mysql $MYSQL_DATABASE_ZFS_DATASET
-chown mysql:mysql -R /var/lib/mysql
-
+    zfs set mountpoint=/var/lib/mysql $MYSQL_DATABASE_ZFS_DATASET
+    chown mysql:mysql -R /var/lib/mysql
+fi
 
 cat > /etc/rc.local << EOF
 #!/bin/sh -e
