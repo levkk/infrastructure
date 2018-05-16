@@ -137,6 +137,22 @@ fi
 apt-get install mariadb-server-10.2
 
 ARC_CACHE_LIMIT=`cat /proc/meminfo | grep 'MemTotal' | awk '{print $2}' | python -c "import sys; print int(1000 * float(sys.stdin.read()) * float($ARC_CACHE_RATIO))"`
+MYSQL_BUFFER_POOL=`cat /proc/meminfo | grep 'MemTotal' | awk '{print $2}' | python -c "import sys; print int(1000 * float(sys.stdin.read()) * float($MYSQL_BUFFER_POOL_RATIO))"`
+
+
+if stat ~/.mariadb_my_cnf_copied &> /dev/null; then
+    echo "Already compied default my.cnf to /var/lib/mysql/my.cnf"
+else
+    echo "Copying default my.cnf to /var/lib/mysql/my.cnf"
+    echo "Stopping MySQL server"
+    sudo service mysql stop
+    template_file=master-my.cnf
+    template="$(cat ${template_file})"
+    eval "echo \"${template}\"" > /etc/mysql/my.cnf
+    echo "Copied my.cnf" > ~/.mariadb_my_cnf_copied
+    echo "Starting MySQL server"
+    sudo service mysql start
+fi
 
 cat > /etc/rc.local << EOF
 #!/bin/sh -e
