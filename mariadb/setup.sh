@@ -47,7 +47,8 @@ apt-get install -y \
     bc \
     unzip \
     msmtp \
-    msmtp-mta
+    msmtp-mta \
+    htop
 
 
 if stat ~/.mariadb_repo_setup &> /dev/null; then
