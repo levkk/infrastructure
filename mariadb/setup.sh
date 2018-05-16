@@ -66,19 +66,18 @@ ZPOOL_COMPRESSION=lz4
 
 ARC_CACHE_RATIO=0.10
 
+MYSQL_BUFFER_POOL_RATIO=0.75
 MYSQL_DATABASE_ZFS_DATASET=$ZPOOL_NAME/mysql
 MYSQL_LOG_ZFS_DATASET=$ZPOOL_NAME/mysql_logs
 ZFS_TMP_DATASET=$ZPOOL_NAME/tmp
 NOTIFICATION_EMAIL_PATH=~/.notification_email
 SNAPSHOT_PREFIX=zfsautosnapshots
 
+read_var_from_path ~/.MYSQL_SERVER_ID MYSQL_SERVER_ID "Please enter a numeric MySQL server ID (do not reuse an ID unless you know what you're doing): "
+
 read_var_from_path ~/.notification_email NOTIFICATION_EMAIL "Enter notification email address: "
-
 read_var_from_path ~/.Z3_BACKUP_BUCKET Z3_BACKUP_BUCKET "Enter s3 bucket to use for zfs backups: "
-
 read_var_from_path ~/.Z3_S3_PREFIX Z3_S3_PREFIX "Enter the s3 prefix to use for zfs backups (probably this machine's name): "
-
-
 read_var_from_path ~/.Z3_S3_KEY_ID Z3_S3_KEY_ID "Enter an IAM Access Key ID for a user with permissions to write to $Z3_BACKUP_BUCKET: "
 read_var_from_path ~/.Z3_S3_SECRET Z3_S3_SECRET "Enter an IAM Access Secret for a user with permissions to write to $Z3_BACKUP_BUCKET: "
 
