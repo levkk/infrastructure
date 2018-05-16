@@ -69,6 +69,7 @@ MYSQL_DATABASE_ZFS_DATASET=$ZPOOL_NAME/mysql
 MYSQL_LOG_ZFS_DATASET=$ZPOOL_NAME/mysql_logs
 ZFS_TMP_DATASET=$ZPOOL_NAME/tmp
 NOTIFICATION_EMAIL_PATH=~/.notification_email
+SNAPSHOT_PREFIX=zfsautosnapshots
 
 read_var_from_path ~/.notification_email NOTIFICATION_EMAIL "Enter notification email address: "
 
@@ -177,7 +178,7 @@ S3_PREFIX=$Z3_S3_PREFIX
 FILESYSTEM=$ZPOOL_NAME
 
 # only backup snapshots with this prefix
-SNAPSHOT_PREFIX=zfs-auto-snap:daily
+SNAPSHOT_PREFIX=$SNAPSHOT_PREFIX
 EOF
 
 
@@ -188,7 +189,7 @@ export FULL_SNAPSHOT_CRON_EXPR="30 7 * * *"
 cat > crontab << EOF
 MAILTO=$NOTIFICATION_EMAIL
 PATH=/usr/bin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
-$INCREMENTAL_SNAPSHOT_CRON_EXPR zfSnap -p autobackups -a 3d -r $ZPOOL_NAME/mysql
+$INCREMENTAL_SNAPSHOT_CRON_EXPR zfSnap -p $SNAPSHOT_PREFIX -a 3d -r $ZPOOL_NAME/mysql
 $FULL_SNAPSHOT_CRON_EXPR zfSnap -d
 $INCREMENTAL_SNAPSHOT_CRON_EXPR sleep 10 && /usr/bin/nice -n 19 sh -c "pidlock -n incremental_backup -c 'chronic sh -c \"z3 backup --compressor pigz4\"'"
 $FULL_SNAPSHOT_CRON_EXPR sleep 10 && /usr/bin/nice -n 19 sh -c "pidlock -n full_backup -c 'chronic sh -c \"z3 backup --full --compressor pigz4\"'"
