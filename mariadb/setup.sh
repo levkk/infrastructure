@@ -41,7 +41,6 @@ echo never > /sys/kernel/mm/transparent_hugepage/defrag
 exit 0
 EOF
 
-https://github.com/aigo9/pidlockfile
 
 
 python -c "
