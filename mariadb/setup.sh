@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 read_var () {
     while true
