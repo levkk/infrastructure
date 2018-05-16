@@ -49,8 +49,6 @@ apt-get install -y \
 
 curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
 
-apt-get install mariadb-server-10.2
-
 pip install pidlock
 pip install z3
 
@@ -122,6 +120,10 @@ while True:
     zfs set mountpoint=/var/lib/mysql $MYSQL_DATABASE_ZFS_DATASET
     chown mysql:mysql -R /var/lib/mysql
 fi
+
+
+apt-get install mariadb-server-10.2
+
 
 cat > /etc/rc.local << EOF
 #!/bin/sh -e
