@@ -77,6 +77,10 @@ read_var_from_path ~/.Z3_BACKUP_BUCKET Z3_BACKUP_BUCKET "Enter s3 bucket to use 
 read_var_from_path ~/.Z3_S3_PREFIX Z3_S3_PREFIX "Enter the s3 prefix to use for zfs backups (probably this machine's name): "
 
 
+read_var_from_path ~/.Z3_S3_KEY_ID Z3_S3_KEY_ID "Enter an IAM Access Key ID for a user with permissions to write to $Z3_BACKUP_BUCKET"
+read_var_from_path ~/.Z3_S3_SECRET Z3_S3_SECRET "Enter an IAM Access Secret for a user with permissions to write to $Z3_BACKUP_BUCKET"
+
+
 if zfs list  | grep $ZPOOL_NAME ; then
     echo "Skipping ZFS pool setup (it's $ZPOOL_NAME exists)."
 else
@@ -156,8 +160,8 @@ cat > /etc/z3_backup/z3.conf << EOF
 [main]
 # # you can override any of these with an environment variable
 BUCKET=$Z3_BACKUP_BUCKET
-# S3_KEY_ID=
-# S3_SECRET=
+S3_KEY_ID=$Z3_S3_KEY_ID
+S3_SECRET=$Z3_S3_SECRET
 
 # number of worker threads used by pput when uploading
 CONCURRENCY=$Z3_CONCURRENCY
