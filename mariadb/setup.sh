@@ -60,7 +60,7 @@ read_var "Enter notification email address: " NOTIFICATION_EMAIL
 read_var "Enter s3 bucket to use for zfs backups: " Z3_BACKUP_BUCKET
 read_var "Enter the s3 prefix to use for zfs backups (probably this machine's name): " Z3_S3_PREFIX
 
-
+echo "Setting up ZFS pool."
 python -c "
 import subprocess, sys, json;
 while True:
@@ -68,7 +68,7 @@ while True:
     for x in json.loads(subprocess.check_output(['lsblk', '--json', '--list']))['blockdevices']:
         device_name = '/dev/{}'.format(x['name'])
         if not x['mountpoint'] and not x.get('children'):
-            dev = raw_input('use {} {} (y/n)?: '.format(device_name, x['size'])).lower().strip()
+            dev = raw_input('use {} {} for ZFS pool (y/n)?: '.format(device_name, x['size'])).lower().strip()
             if dev == 'y':
                 devices.append(device_name)
     confirm = raw_input('Confirm using these devices {} for the $ZPOOL_NAME ZFS pool (y/n): '.format(','.join(devices)))
@@ -83,21 +83,21 @@ while True:
 echo "Setting zpool compression to $ZPOOL_COMPRESSION"
 zfs set compression=lz4 $ZPOOL_NAME
 
+echo "Creating $MYSQL_LOG_ZFS_DATASET"
 zfs create $MYSQL_LOG_ZFS_DATASET
 zfs set recordsize=128k $MYSQL_LOG_ZFS_DATASET
 zfs set atime=off $MYSQL_LOG_ZFS_DATASET
 zfs set primarycache=metadata $MYSQL_LOG_ZFS_DATASET
-zfs set mountpoint=/var/log/mysql $MYSQL_DATABASE_ZFS_DATASET
+zfs set mountpoint=/var/log/mysql $MYSQL_LOG_ZFS_DATASET
 
-
+echo "Creating $ZFS_TMP_DATASET"
 zfs create $ZFS_TMP_DATASET
 zfs set recordsize=128k $ZFS_TMP_DATASET
 zfs set atime=off $ZFS_TMP_DATASET
 zfs set primarycache=metadata $ZFS_TMP_DATASET
-zfs set mountpoint=/var/lib/mysql/tmp $MYSQL_DATABASE_ZFS_DATASET
+zfs set mountpoint=/var/lib/mysql/tmp $ZFS_TMP_DATASET
 
-
-
+echo "Creating $MYSQL_DATABASE_ZFS_DATASET"
 zfs create $MYSQL_DATABASE_ZFS_DATASET
 zfs set recordsize=16k $MYSQL_DATABASE_ZFS_DATASET
 zfs set atime=off $MYSQL_DATABASE_ZFS_DATASET
