@@ -47,7 +47,13 @@ apt-get install -y \
     msmtp \
     msmtp-mta
 
-curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
+
+if stat ~/.mariadb_repo_setup &> /dev/null; then
+    echo "Already added mariadb repo"
+else
+    curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
+    echo "Added mariadb repo" > ~/.mariadb_repo_setup
+fi
 
 pip install pidlock
 pip install z3
