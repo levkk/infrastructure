@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 read_var () {
     # read_var (MSG, VAR_NAME)
@@ -146,7 +147,7 @@ else
     echo "Copying default my.cnf to /var/lib/mysql/my.cnf"
     echo "Stopping MySQL server"
     sudo service mysql stop
-    template_file=master-my.cnf
+    template_file=$DIR/master-my.cnf
     template="$(cat ${template_file})"
     eval "echo \"${template}\"" > /etc/mysql/my.cnf
     echo "Copied my.cnf" > ~/.mariadb_my_cnf_copied
