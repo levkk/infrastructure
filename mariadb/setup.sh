@@ -191,7 +191,7 @@ MAX_RETRIES=3
 S3_PREFIX=$Z3_S3_PREFIX
 
 # what zfs dataset to operate on
-FILESYSTEM=$ZPOOL_NAME
+FILESYSTEM=$MYSQL_DATABASE_ZFS_DATASET
 
 # only backup snapshots with this prefix
 SNAPSHOT_PREFIX=$SNAPSHOT_PREFIX
@@ -210,6 +210,5 @@ $FULL_SNAPSHOT_CRON_EXPR zfSnap -d
 $INCREMENTAL_SNAPSHOT_CRON_EXPR sleep 10 && /usr/bin/nice -n 19 sh -c "pidlock -n incremental_backup -c 'chronic sh -c \"z3 backup --compressor pigz4\"'"
 $FULL_SNAPSHOT_CRON_EXPR sleep 10 && /usr/bin/nice -n 19 sh -c "pidlock -n full_backup -c 'chronic sh -c \"z3 backup --full --compressor pigz4\"'"
 EOF
-
 
 crontab crontab
