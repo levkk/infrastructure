@@ -23,7 +23,6 @@ read_var_from_path () {
         printf -v $2 `cat $1`
         echo "Read $2=`echo $2` from $1"
     else
-        echo $3
         read_var "$3" "$2"
         echo -n $2 > $1
     fi
