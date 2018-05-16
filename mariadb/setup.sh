@@ -30,7 +30,7 @@ apt-get install -y \
     python-pip \
     pv \
     pigz \
-    zfSnap \
+    zfsnap \
     bc \
     unzip \
     msmtp \
