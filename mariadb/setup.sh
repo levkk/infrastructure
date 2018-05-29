@@ -210,7 +210,7 @@ cat > crontab << EOF
 MAILTO=$NOTIFICATION_EMAIL
 PATH=/usr/bin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
 $INCREMENTAL_SNAPSHOT_CRON_EXPR zfSnap -p $SNAPSHOT_PREFIX -a 3d -r $MYSQL_DATABASE_ZFS_DATASET
-$FULL_SNAPSHOT_CRON_EXPR zfSnap -d
+$FULL_SNAPSHOT_CRON_EXPR zfSnap -d -p $SNAPSHOT_PREFIX
 $INCREMENTAL_SNAPSHOT_CRON_EXPR sleep 10 && /usr/bin/nice -n 19 sh -c "pidlock -n incremental_backup -c 'chronic sh -c \"z3 backup --compressor pigz4\"'"
 $FULL_SNAPSHOT_CRON_EXPR sleep 10 && /usr/bin/nice -n 19 sh -c "pidlock -n full_backup -c 'chronic sh -c \"z3 backup --full --compressor pigz4\"'"
 EOF
